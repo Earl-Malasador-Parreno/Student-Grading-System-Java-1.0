@@ -13,5 +13,7 @@ Step 3: Put all java files in "finals" folder
 
 Step 4: Open applications related to java not in BlueJ (Instead use eclipse or any other java apps); NOTE: U need JDK in order to run java! 
 
+Step 5: import "finals" folder
 
-Step 5: Run using GradesSystemApp.java
+
+Step 6: Run using GradesSystemApp.java
