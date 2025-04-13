@@ -69,7 +69,6 @@ public class GradeReport extends Grades {
         }
     }
 
-
     public static void displayGradeSummary(StudentGrades[] students) {
         System.out.println("\n===== Grade Summary =====");
         for (StudentGrades student : students) {

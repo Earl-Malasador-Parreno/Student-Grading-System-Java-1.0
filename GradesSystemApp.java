@@ -60,14 +60,12 @@ public class GradesSystemApp {
             cardLayout.show(mainPanel, "ViewStudents");
         });
 
-        // Panel to hold the buttons side by side
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         btnPanel.add(newStudentBtn);
         btnPanel.add(viewStudentsBtn);
 
-        // Wrapper panel to center btnPanel vertically and horizontally
         JPanel centerWrapper = new JPanel(new GridBagLayout());
-        centerWrapper.add(btnPanel); // This will center it in both axes
+        centerWrapper.add(btnPanel);
 
         panel.add(centerWrapper, BorderLayout.CENTER);
         return panel;
@@ -77,7 +75,6 @@ public class GradesSystemApp {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Form panel
         JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         
         JTextField nameField = new JTextField();
@@ -92,7 +89,7 @@ public class GradesSystemApp {
         formPanel.add(yearField);
         
         formPanel.setPreferredSize(new Dimension(500, 100));
-        // Button panel
+        
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton submitBtn = new JButton("Submit");
         JButton cancelBtn = new JButton("Cancel");
@@ -111,12 +108,10 @@ public class GradesSystemApp {
                 currentStudent = new StudentGrades(allStudents.size() + 1, name, course, year);
                 allStudents.add(currentStudent);
                 
-                // Reset fields
                 nameField.setText("");
                 courseField.setText("");
                 yearField.setText("");
                 
-                // Move to subject entry
                 cardLayout.show(mainPanel, "SubjectEntry");
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(frame, "Please enter a valid year level");
@@ -144,7 +139,6 @@ public class GradesSystemApp {
     private JPanel createViewStudentsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        // Student list
         studentList = new JList<>(studentListModel);
         studentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         studentList.setFont(new Font("Monospaced", Font.PLAIN, 14));
@@ -152,32 +146,28 @@ public class GradesSystemApp {
         JScrollPane scrollPane = new JScrollPane(studentList);
         panel.add(scrollPane, BorderLayout.CENTER);
         
-        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton viewDetailsBtn = new JButton("View Details");
         JButton editBtn = new JButton("Edit");
         JButton deleteBtn = new JButton("Delete");
         JButton backBtn = new JButton("Back");
         
-        // View Details Button
         viewDetailsBtn.addActionListener(e -> {
             int selectedIndex = studentList.getSelectedIndex();
             if (selectedIndex >= 0) {
                 currentStudent = allStudents.get(selectedIndex);
-                loadStudentDetails();  // Load details into the detailsArea
+                loadStudentDetails();
                 cardLayout.show(mainPanel, "StudentDetails");
             } else {
                 JOptionPane.showMessageDialog(frame, "Please select a student");
             }
         });
 
-        // Edit Button
         editBtn.addActionListener(e -> {
             int selectedIndex = studentList.getSelectedIndex();
             if (selectedIndex >= 0) {
                 currentStudent = allStudents.get(selectedIndex);
 
-                // Rebuild subject entry form with existing student grades pre-filled
                 for (String subject : SubjectList.getSubjects()) {
                     ArrayList<JTextField> fields = subjectFieldMap.get(subject);
                     SubjectGrades sg = currentStudent.getSubjectGrades().stream()
@@ -186,13 +176,21 @@ public class GradesSystemApp {
                         .orElse(null);
 
                     if (sg != null) {
+                        // Use raw values when available
                         for (int i = 0; i < AssessmentWeights.MAX_QUIZZES; i++) {
-                            fields.get(i).setText(String.valueOf(sg.getQuizzes().get(i)));
+                            String quizValue = sg.getRawQuizzes().size() > i ? 
+                                sg.getRawQuizzes().get(i) : String.valueOf(sg.getQuizzes().get(i));
+                            fields.get(i).setText(quizValue);
                         }
-                        fields.get(5).setText(String.valueOf(sg.getPrelim()));
-                        fields.get(6).setText(String.valueOf(sg.getMidterm()));
-                        fields.get(7).setText(String.valueOf(sg.getSemiFinal()));
-                        fields.get(8).setText(String.valueOf(sg.getFinalExam()));
+                        fields.get(5).setText(sg.getRawPrelim() != null ? sg.getRawPrelim() : String.valueOf(sg.getPrelim()));
+                        fields.get(6).setText(sg.getRawMidterm() != null ? sg.getRawMidterm() : String.valueOf(sg.getMidterm()));
+                        fields.get(7).setText(sg.getRawSemiFinal() != null ? sg.getRawSemiFinal() : String.valueOf(sg.getSemiFinal()));
+                        fields.get(8).setText(sg.getRawFinalExam() != null ? sg.getRawFinalExam() : String.valueOf(sg.getFinalExam()));
+                    } else {
+                        // Clear fields if no data exists
+                        for (int i = 0; i < 9; i++) {
+                            fields.get(i).setText("");
+                        }
                     }
                 }
 
@@ -202,7 +200,6 @@ public class GradesSystemApp {
             }
         });
 
-        // Delete Button
         deleteBtn.addActionListener(e -> {
             int selectedIndex = studentList.getSelectedIndex();
             if (selectedIndex >= 0) {
@@ -212,7 +209,7 @@ public class GradesSystemApp {
                     JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     allStudents.remove(selectedIndex);
-                    refreshStudentList();  // Update the student list
+                    refreshStudentList();
                     JOptionPane.showMessageDialog(frame, "Student deleted successfully.");
                 }
             } else {
@@ -220,7 +217,6 @@ public class GradesSystemApp {
             }
         });
 
-        // Back Button
         backBtn.addActionListener(e -> cardLayout.show(mainPanel, "Home"));
         
         buttonPanel.add(viewDetailsBtn);
@@ -238,54 +234,56 @@ public class GradesSystemApp {
         
         JTabbedPane tabbedPane = new JTabbedPane();
         
-        // Create a tab for each subject from the dynamic SubjectList
         for (String subject : SubjectList.getSubjects()) {
             JPanel subjectPanel = createSubjectTab(subject);
             tabbedPane.addTab(subject, subjectPanel);
         }
         
-        // Button panel using FlowLayout to display buttons side by side
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 20, 10));
         
         JButton backBtn = new JButton("Back");
-        backBtn.addActionListener(e -> cardLayout.show(mainPanel, "NewStudent")); // or "Home" if preferred
+        backBtn.addActionListener(e -> cardLayout.show(mainPanel, "NewStudent"));
         
         JButton finishBtn = new JButton("Finish");
         finishBtn.addActionListener(e -> {
-            // Clear existing subject grades (important if editing)
             currentStudent.getSubjectGrades().clear();
             
-            // Use dynamic subject list
             for (String subject : SubjectList.getSubjects()) {
                 ArrayList<JTextField> fields = subjectFieldMap.get(subject);
                 ArrayList<Double> quizzes = new ArrayList<>();
-        
+                ArrayList<String> rawQuizzes = new ArrayList<>();
+
                 try {
-                    // Parse quiz fields (support "scored/total" format)
                     for (int i = 0; i < AssessmentWeights.MAX_QUIZZES; i++) {
-                        String[] parts = fields.get(i).getText().split("/");
+                        String rawValue = fields.get(i).getText();
+                        rawQuizzes.add(rawValue);
+                        
+                        String[] parts = rawValue.split("/");
                         if (parts.length == 2) {
                             double scored = Double.parseDouble(parts[0]);
                             double total = Double.parseDouble(parts[1]);
-                            quizzes.add((scored / total) * 100); // Convert to percentage
+                            quizzes.add((scored / total) * 100);
                         } else {
-                            quizzes.add(Double.parseDouble(fields.get(i).getText())); // fallback if no "/"
+                            quizzes.add(Double.parseDouble(rawValue));
                         }
                     }
-        
-                    // Parse exam fields using parseGrade helper
-                    double prelim = parseGrade(fields.get(5).getText());
-                    double midterm = parseGrade(fields.get(6).getText());
-                    double semiFinal = parseGrade(fields.get(7).getText());
-                    double finalExam = parseGrade(fields.get(8).getText());
-        
-                    // Create and add subject grades
+
                     SubjectGrades sg = new SubjectGrades(
-                    	    subject, subject, quizzes, prelim, midterm, semiFinal, finalExam
-                    	);
+                        subject, subject, quizzes, 
+                        parseGrade(fields.get(5).getText()),
+                        parseGrade(fields.get(6).getText()),
+                        parseGrade(fields.get(7).getText()),
+                        parseGrade(fields.get(8).getText())
+                    );
+                    
+                    // Store raw values
+                    sg.setRawQuizzes(rawQuizzes);
+                    sg.setRawPrelim(fields.get(5).getText());
+                    sg.setRawMidterm(fields.get(6).getText());
+                    sg.setRawSemiFinal(fields.get(7).getText());
+                    sg.setRawFinalExam(fields.get(8).getText());
 
                     currentStudent.addSubjectGrade(sg);
-        
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(frame, "Please enter valid grades for " + subject);
                     return;
@@ -296,7 +294,6 @@ public class GradesSystemApp {
             cardLayout.show(mainPanel, "Home");
         });
         
-        // Add both buttons to the FlowLayout panel
         buttonPanel.add(backBtn);
         buttonPanel.add(finishBtn);
         
@@ -311,11 +308,10 @@ public class GradesSystemApp {
             if (parts.length == 2) {
                 double scored = Double.parseDouble(parts[0]);
                 double total = Double.parseDouble(parts[1]);
-                double percentage = (scored / total) * 100;
-                return percentage;  // Return the grade as percentage
+                return (scored / total) * 100;
             }
         }
-        return Double.parseDouble(input);  // Return the raw value if no "/" present
+        return Double.parseDouble(input);
     }
 
     private JPanel createSubjectTab(String subject) {
@@ -324,7 +320,6 @@ public class GradesSystemApp {
     
         ArrayList<JTextField> fields = new ArrayList<>();
     
-        // Add quiz fields
         for (int i = 1; i <= AssessmentWeights.MAX_QUIZZES; i++) {
             panel.add(new JLabel("Quiz " + i + ":"));
             JTextField quizField = new JTextField(5);
@@ -333,7 +328,6 @@ public class GradesSystemApp {
             panel.add(quizField);
         }
     
-        // Add exam fields
         String[] exams = {"Prelim Exam", "Midterm Exam", "Semi-Final Exam", "Final Exam"};
         for (String exam : exams) {
             panel.add(new JLabel(exam + ":"));
@@ -343,7 +337,6 @@ public class GradesSystemApp {
             panel.add(examField);
         }
     
-        // Store all fields for this subject in the map
         subjectFieldMap.put(subject, fields);
     
         return panel;
@@ -356,15 +349,12 @@ public class GradesSystemApp {
         detailsArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         detailsArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton backBtn = new JButton("Back");
         JButton editInfoBtn = new JButton("Edit Student Info");
 
-        // Edit Student Info Button
         editInfoBtn.addActionListener(e -> {
             if (currentStudent != null) {
-                // Pre-fill current student's details into the form
                 JTextField nameField = new JTextField(currentStudent.getStudentName());
                 JTextField courseField = new JTextField(currentStudent.getCourse());
                 JTextField yearField = new JTextField(String.valueOf(currentStudent.getYearLevel()));
@@ -380,25 +370,16 @@ public class GradesSystemApp {
                 int option = JOptionPane.showConfirmDialog(frame, editPanel, "Edit Student Info", JOptionPane.OK_CANCEL_OPTION);
                 
                 if (option == JOptionPane.OK_OPTION) {
-                    // Update student's information if confirmed
-                    String newName = nameField.getText();
-                    String newCourse = courseField.getText();
-                    int newYearLevel = Integer.parseInt(yearField.getText());
+                    currentStudent.setStudentName(nameField.getText());
+                    currentStudent.setCourse(courseField.getText());
+                    currentStudent.setYearLevel(Integer.parseInt(yearField.getText()));
                     
-                    // Update the current student's details
-                    currentStudent.setStudentName(newName);
-                    currentStudent.setCourse(newCourse);
-                    currentStudent.setYearLevel(newYearLevel);
-                    
-                    // Refresh the details display
                     loadStudentDetails();
-                    
                     JOptionPane.showMessageDialog(frame, "Student information updated successfully!");
                 }
             }
         });
 
-        // Back Button
         backBtn.addActionListener(e -> cardLayout.show(mainPanel, "ViewStudents"));
         
         buttonPanel.add(editInfoBtn);
@@ -420,10 +401,9 @@ public class GradesSystemApp {
         sb.append("SUBJECT GRADES:\n");
         sb.append("--------------------------------------------------\n");
 
-        // Loop through each subject grade and display only the final grade and grade point
         for (SubjectGrades subjectGrade : currentStudent.getSubjectGrades()) {
             double finalGrade = subjectGrade.getFinalGrade();
-            double gradePoint = GradingSystem.getGradePoint(finalGrade);  // Get grade point for final grade
+            double gradePoint = GradingSystem.getGradePoint(finalGrade);
             String status = GradingSystem.isPassing(finalGrade) ? "PASSED" : "FAILED";
 
             sb.append(String.format("Subject: %s\n", subjectGrade.getSubjectName()));

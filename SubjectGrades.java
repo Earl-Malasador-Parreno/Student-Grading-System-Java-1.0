@@ -5,7 +5,13 @@ import java.util.ArrayList;
 public class SubjectGrades extends Grades {
     private String subjectName;
     private String subjectCode;
-
+    private ArrayList<String> rawQuizzes = new ArrayList<>();
+    private String rawPrelim;
+    private String rawMidterm;
+    private String rawSemiFinal;
+    private String rawFinalExam;
+    
+    
     public SubjectGrades(String subjectName, String subjectCode, 
                          ArrayList<Double> quizzes, double prelim, 
                          double midterm, double semiFinal, double finalExam) {
@@ -46,5 +52,44 @@ public class SubjectGrades extends Grades {
     public void setSubjectName(String subjectName) {
         this.subjectName = subjectName;
     }
+    
+    public ArrayList<String> getRawQuizzes() {
+        return rawQuizzes;
+    }
 
+    public void setRawQuizzes(ArrayList<String> rawQuizzes) {
+        this.rawQuizzes = rawQuizzes;
+    }
+
+    public String getRawPrelim() {
+        return rawPrelim;
+    }
+
+    public void setRawPrelim(String rawPrelim) {
+        this.rawPrelim = rawPrelim;
+    }
+
+    public String getRawMidterm() {
+        return rawMidterm;
+    }
+
+    public void setRawMidterm(String rawMidterm) {
+        this.rawMidterm = rawMidterm;
+    }
+
+    public String getRawSemiFinal() {
+        return rawSemiFinal;
+    }
+
+    public void setRawSemiFinal(String rawSemiFinal) {
+        this.rawSemiFinal = rawSemiFinal;
+    }
+
+    public String getRawFinalExam() {
+        return rawFinalExam;
+    }
+
+    public void setRawFinalExam(String rawFinalExam) {
+        this.rawFinalExam = rawFinalExam;
+    }
 }
